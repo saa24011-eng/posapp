@@ -3,29 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>POSApp - 販売記録システム</title>
+  <title>POS Web App</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
+      --primary-color: #2563eb;
+      --bg-color: #f8fafc;
       --card-bg: #ffffff;
-      --text: #0f172a;
-      --border: #e2e8f0;
-      --danger: #ef4444;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      --text-color: #1e293b;
+      --border-color: #e2e8f0;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
       padding: 20px;
     }
 
@@ -36,113 +28,74 @@
 
     .card {
       background: var(--card-bg);
+      border-radius: 8px;
       padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       margin-bottom: 24px;
-      border: 1px solid var(--border);
     }
 
-    .hidden {
-      display: none !important;
-    }
-
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* ログイン画面 */
-    .login-container {
+    .auth-container {
       text-align: center;
-      padding: 48px 24px;
+      padding: 40px 20px;
     }
 
-    .login-container h1 {
-      margin-bottom: 12px;
-      font-size: 1.75rem;
-    }
-
-    .login-container p {
-      color: #64748b;
-      margin-bottom: 24px;
-    }
-
-    /* フォーム要素 */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #475569;
-    }
-
-    input, select {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--primary);
-    }
-
-    /* ボタン */
     button {
-      background-color: var(--primary);
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      padding: 12px 20px;
+      padding: 10px 20px;
       border-radius: 6px;
-      font-size: 1rem;
-      font-weight: 600;
+      font-size: 16px;
       cursor: pointer;
-      transition: background-color 0.2s, opacity 0.2s;
+      transition: background-color 0.2s;
     }
 
     button:hover {
-      background-color: var(--primary-hover);
+      background-color: #1d4ed8;
     }
 
     .btn-logout {
-      background-color: var(--danger);
+      background-color: #64748b;
+      padding: 6px 12px;
+      font-size: 14px;
     }
 
     .btn-logout:hover {
-      background-color: #dc2626;
+      background-color: #475569;
     }
 
-    /* 自動計算ボックス */
-    .total-box {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      padding: 16px;
-      border-radius: 8px;
-      font-size: 1.25rem;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    .total-preview {
+      font-size: 18px;
       font-weight: bold;
-      color: #1e40af;
-      margin-bottom: 20px;
-      text-align: right;
-    }
-
-    /* テーブル */
-    .table-responsive {
-      overflow-x: auto;
+      color: var(--primary-color);
+      margin-top: 12px;
+      margin-bottom: 16px;
     }
 
     table {
@@ -152,120 +105,33 @@
     }
 
     th, td {
+      border-bottom: 1px solid var(--border-color);
       padding: 12px;
       text-align: left;
-      border-bottom: 1px solid var(--border);
     }
 
     th {
       background-color: #f1f5f9;
-      font-weight: 600;
-      color: #334155;
     }
 
-    tr:hover {
-      background-color: #f8fafc;
+    .hidden {
+      display: none !important;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
   </style>
-</head>
-<body>
 
-  <div class="container">
-    <!-- 1. ログイン画面（認証が必要なエリアをガード） -->
-    <div id="login-screen" class="card login-container">
-      <h1>POSApp</h1>
-      <p>販売データを記録・管理するにはGoogleアカウントでログインしてください。</p>
-      <button id="btn-login">Googleでログイン</button>
-    </div>
-
-    <!-- 2. メイン機能画面（ログイン後に表示） -->
-    <div id="main-screen" class="hidden">
-      <!-- ヘッダーエリア -->
-      <div class="card flex-between">
-        <div>
-          <span id="user-name" style="font-weight: bold;"></span> さん
-        </div>
-        <button id="btn-logout" class="btn-logout">ログアウト</button>
-      </div>
-
-      <!-- 入力・登録フォーム（5項目） -->
-      <div class="card">
-        <h2 style="margin-bottom: 16px;">販売データの登録</h2>
-        <form id="pos-form">
-          <div class="form-grid">
-            <!-- 項目1: 日時 -->
-            <div class="form-group">
-              <label for="date">1. 販売日時</label>
-              <input type="datetime-local" id="date" required>
-            </div>
-            <!-- 項目2: カテゴリ -->
-            <div class="form-group">
-              <label for="category">2. カテゴリ</label>
-              <select id="category" required>
-                <option value="食品">食品</option>
-                <option value="飲料">飲料</option>
-                <option value="雑貨">雑貨</option>
-                <option value="書籍">書籍</option>
-                <option value="その他">その他</option>
-              </select>
-            </div>
-            <!-- 項目3: 商品名 -->
-            <div class="form-group">
-              <label for="item-name">3. 商品名</label>
-              <input type="text" id="item-name" placeholder="例: ノート" required>
-            </div>
-            <!-- 項目4: 単価 -->
-            <div class="form-group">
-              <label for="price">4. 単価 (円)</label>
-              <input type="number" id="price" min="0" placeholder="150" required>
-            </div>
-            <!-- 項目5: 個数 -->
-            <div class="form-group">
-              <label for="quantity">5. 個数</label>
-              <input type="number" id="quantity" min="1" value="1" required>
-            </div>
-          </div>
-
-          <!-- 自動計算表示エリア -->
-          <div class="total-box">
-            合計金額: <span id="total-display">0</span> 円
-          </div>
-
-          <button type="submit" style="width: 100%;">登録する</button>
-        </form>
-      </div>
-
-      <!-- 履歴表示エリア（Firestore連携） -->
-      <div class="card">
-        <h2>販売履歴一覧</h2>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>日時</th>
-                <th>カテゴリ</th>
-                <th>商品名</th>
-                <th>単価</th>
-                <th>個数</th>
-                <th>合計金額</th>
-              </tr>
-            </thead>
-            <tbody id="history-list">
-              <!-- Firestoreのデータがここにリアルタイム挿入されます -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Firebase SDK (Modular API) -->
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
       getAuth, 
-      signInWithPopup, 
       GoogleAuthProvider, 
+      signInWithPopup, 
       signOut, 
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -274,14 +140,13 @@
       collection, 
       addDoc, 
       query, 
+      where, 
       orderBy, 
-      onSnapshot, 
+      onSnapshot,
       serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // ==========================================
-    // ⚠️ ご自身のFirebase設定に書き換えてください
-    // ==========================================
+    // Firebase設定（ご自身のプロジェクトの設定情報に置き換えてください）
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -291,196 +156,207 @@
       appId: "YOUR_APP_ID"
     };
 
-    // Firebase 初期化
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
     // DOM要素の取得
-    const loginScreen = document.getElementById("login-screen");
-    const mainScreen = document.getElementById("main-screen");
-    const btnLogin = document.getElementById("btn-login");
-    const btnLogout = document.getElementById("btn-logout");
-    const userNameSpan = document.getElementById("user-name");
+    const loginSection = document.getElementById('login-section');
+    const appSection = document.getElementById('app-section');
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const userEmailSpan = document.getElementById('user-email');
+    const posForm = document.getElementById('pos-form');
     
-    const posForm = document.getElementById("pos-form");
-    const priceInput = document.getElementById("price");
-    const quantityInput = document.getElementById("quantity");
-    const totalDisplay = document.getElementById("total-display");
-    const historyList = document.getElementById("history-list");
-    const dateInput = document.getElementById("date");
+    const priceInput = document.getElementById('price');
+    const quantityInput = document.getElementById('quantity');
+    const calcTotalSpan = document.getElementById('calc-total');
+    const recordsTableBody = document.getElementById('records-body');
 
-    // 日時フォームの初期値（現在時刻）を設定
-    const setNowToDateInput = () => {
-      const now = new Date();
-      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      dateInput.value = now.toISOString().slice(0, 16);
-    };
-    setNowToDateInput();
+    // 初期日付の設定 (本日)
+    document.getElementById('date').valueAsDate = new Date();
 
-    // --- 自動計算機能 ---
-    function calculateTotal() {
-      const price = parseFloat(priceInput.value) || 0;
-      const quantity = parseInt(quantityInput.value) || 0;
-      const total = price * quantity;
-      totalDisplay.textContent = total.toLocaleString();
-    }
-    priceInput.addEventListener("input", calculateTotal);
-    quantityInput.addEventListener("input", calculateTotal);
-
-    // --- Google Authentication (ログイン・ログアウト) ---
-    btnLogin.addEventListener("click", () => {
-      signInWithPopup(auth, provider).catch(error => {
-        alert("ログイン時にエラーが発生しました: " + error.message);
-      });
-    });
-
-    btnLogout.addEventListener("click", () => {
-      signOut(auth);
-    });
-
-    // 認証状態の監視 (ログイン制限機能)
+    // 認証状態の監視
+    let currentUser = null;
     let unsubscribeSnapshot = null;
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // ログイン状態：アプリ画面を表示
-        userNameSpan.textContent = user.displayName || user.email;
-        loginScreen.classList.add("hidden");
-        mainScreen.classList.remove("hidden");
-        
-        // データのリアルタイム監視を開始
-        loadSalesHistory(user.uid);
+        currentUser = user;
+        userEmailSpan.textContent = user.email;
+        loginSection.classList.add('hidden');
+        appSection.classList.remove('hidden');
+        loadRecords(user.uid);
       } else {
-        // 未ログイン状態：ログイン画面を表示
-        loginScreen.classList.remove("hidden");
-        mainScreen.classList.add("hidden");
+        currentUser = null;
         if (unsubscribeSnapshot) unsubscribeSnapshot();
+        loginSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
       }
     });
 
-    // --- Firestore データ追加 ---
-    posForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) return;
+    // ログイン処理
+    btnLogin.addEventListener('click', () => {
+      signInWithPopup(auth, provider).catch((error) => {
+        alert("ログインエラー: " + error.message);
+      });
+    });
 
-      const price = parseFloat(priceInput.value);
-      const quantity = parseInt(quantityInput.value);
+    // ログアウト処理
+    btnLogout.addEventListener('click', () => {
+      signOut(auth);
+    });
+
+    // 自動計算処理
+    function calculateTotal() {
+      const price = Number(priceInput.value) || 0;
+      const quantity = Number(quantityInput.value) || 0;
+      const total = price * quantity;
+      calcTotalSpan.textContent = total.toLocaleString();
+    }
+
+    priceInput.addEventListener('input', calculateTotal);
+    quantityInput.addEventListener('input', calculateTotal);
+
+    // データ登録処理
+    posForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const title = document.getElementById('title').value;
+      const price = Number(priceInput.value);
+      const quantity = Number(quantityInput.value);
+      const date = document.getElementById('date').value;
+      const memo = document.getElementById('memo').value;
 
       try {
         await addDoc(collection(db, "sales"), {
-          uid: user.uid,
-          date: dateInput.value,
-          category: document.getElementById("category").value,
-          itemName: document.getElementById("item-name").value,
+          uid: currentUser.uid,
+          title: title,
           price: price,
           quantity: quantity,
           totalPrice: price * quantity,
+          date: date,
+          memo: memo,
           createdAt: serverTimestamp()
         });
 
-        // フォームのリセット
-        document.getElementById("item-name").value = "";
-        priceInput.value = "";
-        quantityInput.value = "1";
-        setNowToDateInput();
+        posForm.reset();
+        document.getElementById('date').valueAsDate = new Date();
         calculateTotal();
+        alert("登録しました！");
       } catch (error) {
-        console.error("データ追加エラー:", error);
+        console.error("保存失敗: ", error);
         alert("データの保存に失敗しました。");
       }
     });
 
-    // --- Firestore データ読み込み (再読み込みしても消えないリアルタイム同期) ---
-    function loadSalesHistory(uid) {
-      const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
+    // データ一覧表示処理
+    function loadRecords(uid) {
+      const q = query(
+        collection(db, "sales"),
+        where("uid", "==", uid),
+        orderBy("createdAt", "desc")
+      );
 
       unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-        historyList.innerHTML = "";
+        recordsTableBody.innerHTML = "";
         snapshot.forEach((doc) => {
           const data = doc.data();
-          
-          // ログインユーザー自身の記録のみ表示
-          if (data.uid === uid) {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${data.date.replace("T", " ")}</td>
-              <td>${data.category}</td>
-              <td>${data.itemName}</td>
-              <td>${data.price.toLocaleString()} 円</td>
-              <td>${data.quantity}</td>
-              <td><strong>${data.totalPrice.toLocaleString()} 円</strong></td>
-            `;
-            historyList.appendChild(tr);
-          }
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${escapeHtml(data.date)}</td>
+            <td>${escapeHtml(data.title)}</td>
+            <td>${data.price.toLocaleString()} 円</td>
+            <td>${data.quantity}</td>
+            <td>${data.totalPrice.toLocaleString()} 円</td>
+            <td>${escapeHtml(data.memo || '')}</td>
+          `;
+          recordsTableBody.appendChild(tr);
         });
       });
     }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
   </script>
+</head>
+<body>
+  <div class="container">
+    <!-- 未ログイン画面 -->
+    <div id="login-section" class="card auth-container">
+      <h2>POSレジ アプリ</h2>
+      <p>ご利用にはGoogleアカウントでのログインが必要です。</p>
+      <button id="btn-login">Googleでログイン</button>
+    </div>
+
+    <!-- ログイン後メイン画面 -->
+    <div id="app-section" class="hidden">
+      <div class="header">
+        <h1>商品販売記録 (POS)</h1>
+        <div class="user-info">
+          <span id="user-email"></span>
+          <button id="btn-logout" class="btn-logout">ログアウト</button>
+        </div>
+      </div>
+
+      <!-- 入力フォーム -->
+      <div class="card">
+        <h2>新規登録</h2>
+        <form id="pos-form">
+          <div class="form-group">
+            <label for="title">商品名</label>
+            <input type="text" id="title" required placeholder="例: コーヒー">
+          </div>
+          <div class="form-group">
+            <label for="price">単価 (円)</label>
+            <input type="number" id="price" min="0" required placeholder="例: 450">
+          </div>
+          <div class="form-group">
+            <label for="quantity">個数</label>
+            <input type="number" id="quantity" min="1" value="1" required>
+          </div>
+          <div class="total-preview">
+            合計金額: <span id="calc-total">0</span> 円
+          </div>
+          <div class="form-group">
+            <label for="date">日付</label>
+            <input type="date" id="date" required>
+          </div>
+          <div class="form-group">
+            <label for="memo">メモ</label>
+            <textarea id="memo" rows="3" placeholder="備考があれば入力"></textarea>
+          </div>
+          <button type="submit">登録</button>
+        </form>
+      </div>
+
+      <!-- 履歴表示 -->
+      <div class="card">
+        <h2>販売履歴</h2>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>商品名</th>
+                <th>単価</th>
+                <th>個数</th>
+                <th>合計</th>
+                <th>メモ</th>
+              </tr>
+            </thead>
+            <tbody id="records-body">
+              <!-- JSで動的生成 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
-```
-
-```markdown:設定およびデプロイ手順ガイド:README.md
-# POSApp セットアップ＆公開ガイド
-
-このドキュメントでは、作成したPOSアプリをFirebaseと連携し、GitHub PagesまたはFirebase Hostingでインターネット上に公開する手順を解説します。
-
----
-
-## 1. Firebaseの設定手順
-
-1. [Firebase Console](https://console.firebase.google.com/) にアクセスし、新しいプロジェクトを作成します。
-2. **Google ログインの設定**:
-   - 左メニュー「Authentication」 > 「始める」を選択。
-   - ログインプロバイダで **Google** を有効化します。
-3. **Firestore データベースの設定**:
-   - 左メニュー「Firestore Database」 > 「データベースの作成」をクリック。
-   - 「ルール」タブを開き、以下のように書き換えて「公開」を押します。
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /sales/{document} {
-      allow read, write: if request.auth != null;
-    }
-  }
-}
-```
-
-4. **Webアプリの登録と設定情報の取得**:
-   - プロジェクト概要から `</>` (Web) アカウントを追加。
-   - 表示された `firebaseConfig` のオブジェクト内容を `index.html` 内の該当箇所にコピー＆ペーストします。
-
----
-
-## 2. GitHubへのアップロード (`posapp`)
-
-1. GitHubにログインし、新しいリポジトリ `posapp` を作成します（Public設定）。
-2. 作成したリポジトリに `index.html` をアップロードし、コミットします。
-
----
-
-## 3. アプリの公開手順
-
-### 選択肢 A: GitHub Pages で公開する場合
-1. リポジトリの **Settings** > **Pages** を開きます。
-2. **Branch** を `main` (または `master`) に変更し、保存します。
-3. 数分後、発行されたURLにアクセスします。
-4. **重要**: Firebase Consoleの「Authentication」>「設定」>「承認済みドメイン」に、GitHub Pagesのドメイン（例: `YOUR-NAME.github.io`）を追加してください。
-
-### 選択肢 B: Firebase Hosting で公開する場合
-1. 端末のターミナルで以下を実行します。
-```bash
-npm install -g firebase-tools
-firebase login
-firebase init hosting
-```
-2. 公開用フォルダに `.` (カレントディレクトリ) または `index.html` のある場所を指定します。
-3. 以下のコマンドで本番公開します。
-```bash
-firebase deploy
-`
