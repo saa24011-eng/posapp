@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POSApp - 販売記録システム</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ログイン画面 */
+    .login-container {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .login-container h1 {
+      margin-bottom: 12px;
+      font-size: 1.75rem;
+    }
+
+    .login-container p {
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    /* フォーム要素 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    /* ボタン */
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-logout {
+      background-color: var(--danger);
+    }
+
+    .btn-logout:hover {
+      background-color: #dc2626;
+    }
+
+    /* 自動計算ボックス */
+    .total-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+
+    /* テーブル */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    tr:hover {
+      background-color: #f8fafc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- 1. ログイン画面（認証が必要なエリアをガード） -->
+    <div id="login-screen" class="card login-container">
+      <h1>POSApp</h1>
+      <p>販売データを記録・管理するにはGoogleアカウントでログインしてください。</p>
+      <button id="btn-login">Googleでログイン</button>
+    </div>
+
+    <!-- 2. メイン機能画面（ログイン後に表示） -->
+    <div id="main-screen" class="hidden">
+      <!-- ヘッダーエリア -->
+      <div class="card flex-between">
+        <div>
+          <span id="user-name" style="font-weight: bold;"></span> さん
+        </div>
+        <button id="btn-logout" class="btn-logout">ログアウト</button>
+      </div>
+
+      <!-- 入力・登録フォーム（5項目） -->
+      <div class="card">
+        <h2 style="margin-bottom: 16px;">販売データの登録</h2>
+        <form id="pos-form">
+          <div class="form-grid">
+            <!-- 項目1: 日時 -->
+            <div class="form-group">
+              <label for="date">1. 販売日時</label>
+              <input type="datetime-local" id="date" required>
+            </div>
+            <!-- 項目2: カテゴリ -->
+            <div class="form-group">
+              <label for="category">2. カテゴリ</label>
+              <select id="category" required>
+                <option value="食品">食品</option>
+                <option value="飲料">飲料</option>
+                <option value="雑貨">雑貨</option>
+                <option value="書籍">書籍</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+            <!-- 項目3: 商品名 -->
+            <div class="form-group">
+              <label for="item-name">3. 商品名</label>
+              <input type="text" id="item-name" placeholder="例: ノート" required>
+            </div>
+            <!-- 項目4: 単価 -->
+            <div class="form-group">
+              <label for="price">4. 単価 (円)</label>
+              <input type="number" id="price" min="0" placeholder="150" required>
+            </div>
+            <!-- 項目5: 個数 -->
+            <div class="form-group">
+              <label for="quantity">5. 個数</label>
+              <input type="number" id="quantity" min="1" value="1" required>
+            </div>
+          </div>
+
+          <!-- 自動計算表示エリア -->
+          <div class="total-box">
+            合計金額: <span id="total-display">0</span> 円
+          </div>
+
+          <button type="submit" style="width: 100%;">登録する</button>
+        </form>
+      </div>
+
+      <!-- 履歴表示エリア（Firestore連携） -->
+      <div class="card">
+        <h2>販売履歴一覧</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>日時</th>
+                <th>カテゴリ</th>
+                <th>商品名</th>
+                <th>単価</th>
+                <th>個数</th>
+                <th>合計金額</th>
+              </tr>
+            </thead>
+            <tbody id="history-list">
+              <!-- Firestoreのデータがここにリアルタイム挿入されます -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK (Modular API) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithPopup, 
+      GoogleAuthProvider, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      query, 
+      orderBy, 
+      onSnapshot, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ==========================================
+    // ⚠️ ご自身のFirebase設定に書き換えてください
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Firebase 初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // DOM要素の取得
+    const loginScreen = document.getElementById("login-screen");
+    const mainScreen = document.getElementById("main-screen");
+    const btnLogin = document.getElementById("btn-login");
+    const btnLogout = document.getElementById("btn-logout");
+    const userNameSpan = document.getElementById("user-name");
+    
+    const posForm = document.getElementById("pos-form");
+    const priceInput = document.getElementById("price");
+    const quantityInput = document.getElementById("quantity");
+    const totalDisplay = document.getElementById("total-display");
+    const historyList = document.getElementById("history-list");
+    const dateInput = document.getElementById("date");
+
+    // 日時フォームの初期値（現在時刻）を設定
+    const setNowToDateInput = () => {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      dateInput.value = now.toISOString().slice(0, 16);
+    };
+    setNowToDateInput();
+
+    // --- 自動計算機能 ---
+    function calculateTotal() {
+      const price = parseFloat(priceInput.value) || 0;
+      const quantity = parseInt(quantityInput.value) || 0;
+      const total = price * quantity;
+      totalDisplay.textContent = total.toLocaleString();
+    }
+    priceInput.addEventListener("input", calculateTotal);
+    quantityInput.addEventListener("input", calculateTotal);
+
+    // --- Google Authentication (ログイン・ログアウト) ---
+    btnLogin.addEventListener("click", () => {
+      signInWithPopup(auth, provider).catch(error => {
+        alert("ログイン時にエラーが発生しました: " + error.message);
+      });
+    });
+
+    btnLogout.addEventListener("click", () => {
+      signOut(auth);
+    });
+
+    // 認証状態の監視 (ログイン制限機能)
+    let unsubscribeSnapshot = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // ログイン状態：アプリ画面を表示
+        userNameSpan.textContent = user.displayName || user.email;
+        loginScreen.classList.add("hidden");
+        mainScreen.classList.remove("hidden");
+        
+        // データのリアルタイム監視を開始
+        loadSalesHistory(user.uid);
+      } else {
+        // 未ログイン状態：ログイン画面を表示
+        loginScreen.classList.remove("hidden");
+        mainScreen.classList.add("hidden");
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+      }
+    });
+
+    // --- Firestore データ追加 ---
+    posForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const price = parseFloat(priceInput.value);
+      const quantity = parseInt(quantityInput.value);
+
+      try {
+        await addDoc(collection(db, "sales"), {
+          uid: user.uid,
+          date: dateInput.value,
+          category: document.getElementById("category").value,
+          itemName: document.getElementById("item-name").value,
+          price: price,
+          quantity: quantity,
+          totalPrice: price * quantity,
+          createdAt: serverTimestamp()
+        });
+
+        // フォームのリセット
+        document.getElementById("item-name").value = "";
+        priceInput.value = "";
+        quantityInput.value = "1";
+        setNowToDateInput();
+        calculateTotal();
+      } catch (error) {
+        console.error("データ追加エラー:", error);
+        alert("データの保存に失敗しました。");
+      }
+    });
+
+    // --- Firestore データ読み込み (再読み込みしても消えないリアルタイム同期) ---
+    function loadSalesHistory(uid) {
+      const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
+
+      unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+        historyList.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          
+          // ログインユーザー自身の記録のみ表示
+          if (data.uid === uid) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${data.date.replace("T", " ")}</td>
+              <td>${data.category}</td>
+              <td>${data.itemName}</td>
+              <td>${data.price.toLocaleString()} 円</td>
+              <td>${data.quantity}</td>
+              <td><strong>${data.totalPrice.toLocaleString()} 円</strong></td>
+            `;
+            historyList.appendChild(tr);
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
+```
+
+```markdown:設定およびデプロイ手順ガイド:README.md
+# POSApp セットアップ＆公開ガイド
+
+このドキュメントでは、作成したPOSアプリをFirebaseと連携し、GitHub PagesまたはFirebase Hostingでインターネット上に公開する手順を解説します。
+
+---
+
+## 1. Firebaseの設定手順
+
+1. [Firebase Console](https://console.firebase.google.com/) にアクセスし、新しいプロジェクトを作成します。
+2. **Google ログインの設定**:
+   - 左メニュー「Authentication」 > 「始める」を選択。
+   - ログインプロバイダで **Google** を有効化します。
+3. **Firestore データベースの設定**:
+   - 左メニュー「Firestore Database」 > 「データベースの作成」をクリック。
+   - 「ルール」タブを開き、以下のように書き換えて「公開」を押します。
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sales/{document} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
+
+4. **Webアプリの登録と設定情報の取得**:
+   - プロジェクト概要から `</>` (Web) アカウントを追加。
+   - 表示された `firebaseConfig` のオブジェクト内容を `index.html` 内の該当箇所にコピー＆ペーストします。
+
+---
+
+## 2. GitHubへのアップロード (`posapp`)
+
+1. GitHubにログインし、新しいリポジトリ `posapp` を作成します（Public設定）。
+2. 作成したリポジトリに `index.html` をアップロードし、コミットします。
+
+---
+
+## 3. アプリの公開手順
+
+### 選択肢 A: GitHub Pages で公開する場合
+1. リポジトリの **Settings** > **Pages** を開きます。
+2. **Branch** を `main` (または `master`) に変更し、保存します。
+3. 数分後、発行されたURLにアクセスします。
+4. **重要**: Firebase Consoleの「Authentication」>「設定」>「承認済みドメイン」に、GitHub Pagesのドメイン（例: `YOUR-NAME.github.io`）を追加してください。
+
+### 選択肢 B: Firebase Hosting で公開する場合
+1. 端末のターミナルで以下を実行します。
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init hosting
+```
+2. 公開用フォルダに `.` (カレントディレクトリ) または `index.html` のある場所を指定します。
+3. 以下のコマンドで本番公開します。
+```bash
+firebase deploy
+`
